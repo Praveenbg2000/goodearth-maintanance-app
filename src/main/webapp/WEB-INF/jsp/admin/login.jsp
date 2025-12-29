@@ -1,115 +1,120 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Admin Login</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#0078d7",
+                        "primary-hover": "#005fa3"
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"],
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #0078d7, #00b4d8);
-            height: 100vh;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .login-container {
-            background: #fff;
-            padding: 40px 45px;
-            border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-            width: 400px;
-            text-align: center;
-            animation: fadeIn 0.6s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .login-container img {
-            width: 70px;
-            height: 70px;
-            margin-bottom: 10px;
-        }
-
-        h2 {
-            color: #0078d7;
-            margin-bottom: 25px;
-        }
-
-        input[type="email"],
-        input[type="password"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            font-size: 15px;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        input:focus {
-            border-color: #0078d7;
-            outline: none;
-            box-shadow: 0 0 5px rgba(0,120,215,0.3);
-        }
-
-        button {
-            background-color: #0078d7;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            width: 100%;
-            font-size: 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.25s ease, transform 0.1s ease;
-        }
-
-        button:hover {
-            background-color: #005fa3;
-            transform: scale(1.03);
-        }
-
-        .error {
-            color: #e74c3c;
-            font-weight: 500;
-            margin-top: 12px;
-        }
-
-        .back-link {
-            display: block;
-            margin-top: 15px;
-            font-size: 14px;
-        }
-
-        .back-link a {
-            color: #0078d7;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .back-link a:hover {
-            text-decoration: underline;
+            font-family: 'Inter', sans-serif;
         }
     </style>
 </head>
 
-<body>
-    <div class="login-container">
-        <img src="https://cdn-icons-png.flaticon.com/512/1041/1041916.png" alt="Admin Icon" />
-        <h2>Admin Login</h2>
+<body class="min-h-screen flex items-center justify-center bg-gray-100">
 
-        <form action="${pageContext.request.contextPath}/admin/login" method="post">
-            <input type="email" name="email" placeholder="Admin Email" required />
-            <input type="password" name="password" placeholder="Password" required />
-            <button type="submit">Login</button>
-        </form>
+<div class="w-full h-screen flex flex-col lg:flex-row overflow-hidden">
 
-        <div class="error">${error}</div>
+    <!-- LEFT : LOGIN FORM -->
+    <div class="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
+        <div class="w-full max-w-md space-y-8">
+
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                    Welcome Admin
+                </h1>
+                <p class="text-gray-500">
+                    Please login to continue
+                </p>
+            </div>
+
+            <!-- FORM (FUNCTIONALITY PRESERVED) -->
+            <form action="${pageContext.request.contextPath}/admin/login" method="post" class="space-y-6">
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        Admin Email
+                    </label>
+                    <input
+                        type="email"
+                        name="email"
+                        required
+                        placeholder="Enter your email"
+                        class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        Password
+                    </label>
+                    <input
+                        type="password"
+                        name="password"
+                        required
+                        placeholder="********"
+                        class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                </div>
+
+                <button
+                    type="submit"
+                    class="w-full py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary-hover transition"
+                >
+                    Login
+                </button>
+
+                <!-- ERROR MESSAGE (PRESERVED) -->
+                <c:if test="${not empty error}">
+                    <div class="text-red-600 font-medium text-center">
+                        ${error}
+                    </div>
+                </c:if>
+
+            </form>
+
+        </div>
     </div>
+
+    <!-- RIGHT : IMAGE -->
+    <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+
+        <img
+            src="${pageContext.request.contextPath}/images/IMG_7700.jpg"
+            alt="Admin Illustration"
+            class="absolute inset-0 w-full h-full object-cover"
+        />
+
+        <!-- Gradient Overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-black/30 to-transparent"></div>
+
+    </div>
+
+</div>
+
 </body>
 </html>
