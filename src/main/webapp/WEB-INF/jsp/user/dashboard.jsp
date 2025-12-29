@@ -14,6 +14,12 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
 
   <style>
+  html.loading,
+body.loading {
+  overflow: hidden !important;
+  height: 100%;
+}
+  
     /* 🌍 Base Styles */
     * { margin: 0; padding: 0;}
     
@@ -613,6 +619,9 @@ html, body {
 
 <!-- Consolidated script block -->
 <script>
+document.documentElement.classList.add("loading");
+document.body.classList.add("loading");
+
 document.addEventListener("DOMContentLoaded", async () => {
   const baseUrl = "${pageContext.request.contextPath}";
   const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -706,11 +715,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     slider.appendChild(div);
   });
 
+  slider.scrollLeft =
+	  slider.children[currentMonthIdx].offsetLeft -
+	  slider.offsetWidth / 2 +
+	  slider.children[currentMonthIdx].offsetWidth / 2;
 
-  // scroll to current month
-  setTimeout(() => {
-    slider.children[currentMonthIdx]?.scrollIntoView({ behavior: "smooth", inline: "center" });
-  }, 200);
 
   // Fetch saved tasks (which tasks are completed) from server
   let savedTasks = [];
@@ -783,6 +792,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     	  if (!isOpen) {
     	    acc.classList.add("open");
     	    content.style.maxHeight = content.scrollHeight + "px";
+    	    content.style.overflowAnchor = "none";
     	    if (icon) icon.style.transform = "rotate(90deg)";
     	  } else {
     	    acc.classList.remove("open");
@@ -814,7 +824,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           });
           const result = await resp.text();
           if (result === "success") {
-            showToast(`✅ Task "${taskName}" marked ${completed ? "complete" : "incomplete"}`, "success");
+            showToast(`✅ Task marked as completed`, "success");
             // update savedTasks array
             if (completed) {
                 // Add entire object (avoid duplicates)
@@ -835,9 +845,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
 
           } else if (result === "deleted") {
-            showToast(`🗑️ Task "${taskName}" removed`, "error");
-            // if deleted, hide the task
-            acc.style.display = "none";
+            showToast(`Task marked as incompleted`, "error");
           } else {
             showToast(`⚠️ Something went wrong`, "error");
             // revert UI if needed
@@ -953,6 +961,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Also, when page first loads, ensure progress is set
   updateProgress();
+
+  // ✅ Release scroll lock after full initialization
+setTimeout(() => {
+  document.documentElement.classList.remove("loading");
+  document.body.classList.remove("loading");
+
+  // Force scroll to top once (prevents browser restore jump)
+  window.scrollTo(0, 0);
+}, 50);
+
 });
 </script>
 

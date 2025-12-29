@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>Maintenance Ticket Raised</title>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: #ffffff;
+      font-size: 14px;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .email-wrapper {
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 45px 30px 60px;
+      background: #f4f7ff;
+      background-position: top center;
+      color: #434343;
+    }
+
+    .card {
+      margin-top: 70px;
+      padding: 20px 20px 60px;
+      background: #ffffff;
+      border-radius: 30px;
+      text-align: center;
+    }
+
+    .content {
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: left;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 500;
+      color: #1f1f1f;
+      margin-bottom: 40px;
+    }
+
+    .details-box {
+      width: 100%;
+      border-radius: 15px;
+      margin-bottom: 20px;
+      line-height: 22px;
+    }
+
+    .issue-box {
+      background-color: #dfdfdf;
+      padding: 16px;
+      border-radius: 15px;
+      line-height: 22px;
+    }
+
+    footer {
+      width: 100%;
+      max-width: 490px;
+      margin: 20px auto 0;
+      text-align: center;
+      border-top: 1px solid #e6ebf1;
+      padding-top: 20px;
+    }
+
+    .social-icons img {
+      width: 36px;
+      margin: 0 6px;
+    }
+
+    /* ----------- MOBILE RESPONSIVE ----------- */
+    @media (max-width: 600px) {
+      .email-wrapper {
+        padding: 25px 15px 40px;
+        background-size: 100% 220px;
+      }
+
+      .card {
+        padding: 20px 15px 40px;
+        border-radius: 20px;
+      }
+
+      h1 {
+        font-size: 18px;
+        margin-bottom: 30px;
+      }
+
+      .content {
+        font-size: 13px;
+      }
+
+      footer p {
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="email-wrapper">
+
+    <main>
+      <div class="card">
+        <div class="content">
+          <h1 style="color: rgb(40, 159, 119); font-weight: 800; font-size: 30px;">Maintenance #Ticket Raised</h1>
+
+          <div class="details-box">
+            <strong>Raised By:</strong> {{USER_NAME}} <br />
+            <strong>Email:</strong> {{USER_EMAIL}} <br />
+            <strong>Home:</strong> {{HOME_NO}} <br />
+            <strong>Task:</strong> {{TASK_NAME}} <br /><br />
+          </div>
+
+          <div class="issue-box">
+            <strong>Issue Description:</strong><br />
+            {{ISSUE_DESCRIPTION}}
+          </div>
+        </div>
+      </div>
+
+      <p style="max-width: 400px; margin: 60px auto 0; text-align: center; font-weight: 500; color: #8c8c8c;">
+        Need help? Ask at
+        <a href="mailto:hr@goodearth.org.in" style="color: #499fb6; text-decoration: none;">
+          hr@goodearth.org.in
+        </a>
+      </p>
+    </main>
+
+    <footer>
+      <p style="font-size: 16px; font-weight: 600;">GoodEarth Eco Futures Pvt Ltd.</p>
+      <p>
+        No 9, 10 & 11, Tarana, GoodEarth Malhar, Kambipura, Kengeri, Bangalore – 560074,
+        Karnataka, India.
+      </p>
+
+      <div class="social-icons" style="margin-top: 16px;">
+        <a href="https://www.facebook.com/GoodEarthOnline" target="_blank">
+          <img src="https://archisketch-resources.s3.ap-northeast-2.amazonaws.com/vrstyler/1661502815169_682499/email-template-icon-facebook" alt="Facebook" />
+        </a>
+        <a href="https://www.instagram.com/goodearthonline/?hl=en" target="_blank">
+          <img src="https://archisketch-resources.s3.ap-northeast-2.amazonaws.com/vrstyler/1661504218208_684135/email-template-icon-instagram" alt="Instagram" />
+        </a>
+        <a href="https://www.youtube.com/goodearthonline_channel" target="_blank">
+          <img src="https://archisketch-resources.s3.ap-northeast-2.amazonaws.com/vrstyler/1661503195931_210869/email-template-icon-youtube" alt="YouTube" />
+        </a>
+      </div>
+
+      <p style="margin-top: 16px;">Copyright © 2025 Company. All rights reserved.</p>
+    </footer>
+  </div>
+</body>
+</html>

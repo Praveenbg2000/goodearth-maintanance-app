@@ -48,11 +48,15 @@ public class AuthController {
     
     @PostMapping("/request-otp")
     public String requestOtp(@RequestParam String email, Model model, HttpSession session) {
+
         // check owner first
         Optional<User> ownerOpt = userRepository.findByEmail(email);
         if (ownerOpt.isPresent()) {
             String otp = otpService.generateOtp(email);
-            emailService.send(email, "Login OTP", "Your OTP is: " + otp);
+
+            // ✅ HTML email
+            emailService.sendOtpHtml(email, otp);
+
             session.setAttribute("loginEmail", email);
             session.setAttribute("loginType", "owner");
             model.addAttribute("message", "OTP sent to owner's email.");
@@ -63,7 +67,10 @@ public class AuthController {
         Optional<AddedUser> addedOpt = addedUserRepository.findByEmail(email);
         if (addedOpt.isPresent()) {
             String otp = otpService.generateOtp(email);
-            emailService.send(email, "Login OTP", "Your OTP is: " + otp);
+
+            // ✅ HTML email
+            emailService.sendOtpHtml(email, otp);
+
             session.setAttribute("loginEmail", email);
             session.setAttribute("loginType", "added");
             session.setAttribute("loginAddedUserId", addedOpt.get().getId());
@@ -76,6 +83,7 @@ public class AuthController {
         model.addAttribute("error", "Your email ID is not registered. Please contact CRM.");
         return "login";
     }
+
 
     @PostMapping("/verify-otp")
     public String verifyOtp(@RequestParam String otp, HttpSession session, Model model) {

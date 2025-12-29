@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -10,6 +11,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 
+import javax.mail.internet.MimeMessage;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,12 +19,14 @@ import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.demo.dto.TaskDto;
 import com.example.demo.model.AddedUser;
@@ -349,7 +354,6 @@ public class UserController {
 
         // 🟢 Always ensure selectedHome is not null
         if (selectedHome != null && !selectedHome.isBlank()) {
-            System.out.println("DEBUG >>> Using selected home from login dropdown: " + selectedHome);
         } else if (userOpt.isPresent()) {
             User u = userOpt.get();
             var homes = clientHomeRepository.findByUserId(u.getId());
@@ -367,7 +371,6 @@ public class UserController {
         // ✅ Persist all session info before redirect
         session.setAttribute("selectedHome", selectedHome);
         session.setAttribute("selectedEmail", email);
-        System.out.println("DEBUG >>> FINAL selectedHome stored in session: " + selectedHome);
 
         // 👑 Owner
         if (userOpt.isPresent()) {
@@ -392,7 +395,6 @@ public class UserController {
                     if (!homes.isEmpty()) {
                         selectedHome = homes.get(0).getHomeName();
                         session.setAttribute("selectedHome", selectedHome);
-                        System.out.println("DEBUG >>> selectedHome restored from owner's home list: " + selectedHome);
                     }
                 }
             }
@@ -508,37 +510,87 @@ public class UserController {
     @PostMapping("/submit-ticket")
     public String submitTicket(@RequestParam("task") String task,
                                @RequestParam("message") String message,
-                               HttpSession session, Model model) {
+                               HttpSession session,
+                               RedirectAttributes redirectAttributes) {
 
         String username = (String) session.getAttribute("username");
         String selectedHome = (String) session.getAttribute("selectedHome");
-        String email = null;
+        String email;
 
         if (Boolean.TRUE.equals(session.getAttribute("isOwner"))) {
             Long userId = (Long) session.getAttribute("userId");
-            email = userRepository.findById(userId).map(User::getEmail).orElse("Unknown");
+            email = userRepository.findById(userId)
+                    .map(User::getEmail)
+                    .orElse("unknown@domain.com");
         } else {
             Long addedId = (Long) session.getAttribute("addedUserId");
-            email = addedUserRepository.findById(addedId).map(AddedUser::getEmail).orElse("Unknown");
+            email = addedUserRepository.findById(addedId)
+                    .map(AddedUser::getEmail)
+                    .orElse("unknown@domain.com");
         }
 
         try {
-            SimpleMailMessage msg = new SimpleMailMessage();
-            msg.setTo("praveenbgmahesh2000@gmail.com"); // Admin mail
-            msg.setSubject("🧾 Maintenance Ticket: " + task);
-            msg.setText("New ticket raised by: " + username + "\n\n" +
-                        "Email: " + email + "\n" +
-                        "Home: " + selectedHome + "\n" +
-                        "Task: " + task + "\n\n" +
-                        "Issue Description:\n" + message);
-            mailSender.send(msg);
-            model.addAttribute("message", "✅ Ticket submitted successfully! Our team will contact you soon.");
+            /* ================= ADMIN EMAIL ================= */
+            MimeMessage adminMessage = mailSender.createMimeMessage();
+            MimeMessageHelper adminHelper =
+                    new MimeMessageHelper(adminMessage, true, "UTF-8");
+
+            adminHelper.setTo("marketing@goodearth.org.in"); // Admin mail
+            adminHelper.setSubject("Maintenance Ticket Raised: " + task);
+
+            ClassPathResource resource = new ClassPathResource("email/issue.html");
+            String html = new String(resource.getInputStream().readAllBytes(),
+                    StandardCharsets.UTF_8);
+
+            html = html.replace("{{USER_NAME}}", username);
+            html = html.replace("{{USER_EMAIL}}", email);
+            html = html.replace("{{HOME_NO}}", selectedHome);
+            html = html.replace("{{TASK_NAME}}", task);
+            html = html.replace("{{ISSUE_DESCRIPTION}}", message);
+
+            adminHelper.setText(html, true);
+            mailSender.send(adminMessage);
+
+            /* ================= USER CONFIRMATION EMAIL ================= */
+            MimeMessage userMessage = mailSender.createMimeMessage();
+            MimeMessageHelper userHelper =
+                    new MimeMessageHelper(userMessage, true, "UTF-8");
+
+            userHelper.setTo(email);
+            userHelper.setSubject("Ticket Raised Successfully – " + task);
+
+            String userMailHtml =
+                    "<div style='font-family:Poppins,Arial,sans-serif; padding:20px;'>"
+                  + "<h2 style='color:#1f1f1f;'>Ticket Raised Successfully ✅</h2>"
+                  + "<p>Dear <strong>" + username + "</strong>,</p>"
+                  + "<p>Your maintenance ticket has been raised successfully.</p>"
+                  + "<p><strong>Task:</strong> " + task + "<br/>"
+                  + "<strong>Home:</strong> " + selectedHome + "</p>"
+                  + "<p>Our maintenance team will contact you shortly.</p>"
+                  + "<br/>"
+                  + "<p style='color:#666;'>Best Regards,<br/>GoodEarth Team</p>"
+                  + "</div>";
+
+            userHelper.setText(userMailHtml, true);
+            mailSender.send(userMessage);
+
+            redirectAttributes.addFlashAttribute(
+                    "success",
+                    "✅ Ticket raised successfully for " + task
+            );
+
         } catch (Exception e) {
-            model.addAttribute("error", "❌ Failed to send ticket email. Please try again later.");
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "❌ Failed to raise ticket. Please try again later."
+            );
         }
 
-        return "user/RaiseTicket";
+        return "redirect:/user/dashboard";
     }
+
+
 
     /* ==========================================================
        ✅ USER TASK MANAGEMENT (for dashboard sync)
@@ -606,9 +658,6 @@ public class UserController {
         Long userId = (Long) session.getAttribute("userId");
         Long addedUserId = (Long) session.getAttribute("addedUserId");
         String selectedHome = (String) session.getAttribute("selectedHome");
-
-
-        System.out.println("DEBUG >>> Task Month=" + taskMonth + " | Year=" + taskYear);
 
         if (selectedHome == null || selectedHome.isBlank()) return "error";
 

@@ -137,7 +137,7 @@ public class AdminController {
             return ResponseEntity.ok("User added successfully!");
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body("Failed to add user: " + e.getMessage());
+            return ResponseEntity.status(500).body("Failed to add user or user added already please check once again all fields : " + e.getMessage());
         }
     }
 
