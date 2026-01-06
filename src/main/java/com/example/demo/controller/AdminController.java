@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -30,10 +31,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.demo.model.Admin;
 import com.example.demo.model.ClientHome;
 import com.example.demo.model.Task;
 import com.example.demo.model.TaskStep;
 import com.example.demo.model.User;
+import com.example.demo.repository.AddedUserRepository;
 import com.example.demo.repository.AdminRepository;
 import com.example.demo.repository.ClientHomeRepository;
 import com.example.demo.repository.TaskRepository;
@@ -46,6 +49,9 @@ public class AdminController {
 
     private final AdminRepository adminRepository;
     private final UserRepository userRepository;
+    
+    @Autowired
+    private AddedUserRepository addedUserRepository;
 
     @Autowired
     private ClientHomeRepository clientHomeRepository;
@@ -69,22 +75,104 @@ public class AdminController {
     public String showLogin() {
         return "admin/login";
     }
+    
+    @GetMapping("/manage")
+    public String manageAdmins(HttpSession session, Model model) {
+
+        String email = (String) session.getAttribute("adminEmail");
+
+        if (email == null || 
+            !email.equalsIgnoreCase("marketing@goodearth.org.in")) {
+            return "redirect:/admin/dashboard";
+        }
+
+        model.addAttribute("admins", adminRepository.findAll());
+        return "admin/manageadmin";
+    }
+    
+    
+    @PostMapping("/delete-admin")
+    @ResponseBody
+    public ResponseEntity<String> deleteAdmin(@RequestParam Long id) {
+
+        if (!adminRepository.existsById(id)) {
+            return ResponseEntity.badRequest().body("Admin not found");
+        }
+
+        adminRepository.deleteById(id);
+        return ResponseEntity.ok("Deleted");
+    }
+
+
+
+    @PostMapping("/update-admin")
+    @ResponseBody
+    public ResponseEntity<String> updateAdmin(
+            @RequestParam Long id,
+            @RequestParam String name,
+            @RequestParam String email,
+            @RequestParam String password) {
+
+        Admin admin = adminRepository.findById(id).orElse(null);
+
+        if (admin == null) {
+            return ResponseEntity.badRequest().body("Admin not found");
+        }
+
+        admin.setName(name);
+        admin.setEmail(email);
+        admin.setPassword(password); // ❌ no encryption (as requested)
+
+        adminRepository.save(admin);
+        return ResponseEntity.ok("Updated");
+    }
+
+    
+    @PostMapping("/add-admin")
+    @ResponseBody
+    public ResponseEntity<String> addAdmin(
+            @RequestParam String name,
+            @RequestParam String email,
+            @RequestParam String password) {
+
+
+        Admin admin = new Admin();
+        admin.setName(name);
+        admin.setEmail(email);
+
+        // ❌ NO ENCRYPTION
+        admin.setPassword(password);
+
+        adminRepository.save(admin);
+
+        return ResponseEntity.ok("Admin added");
+    }
+
+    
 
     @PostMapping("/login")
     public String doLogin(@RequestParam String email,
                           @RequestParam String password,
                           HttpSession session,
                           Model model) {
+
         var opt = adminRepository.findByEmail(email);
+
         if (opt.isPresent() && opt.get().getPassword().equals(password)) {
+
             session.setAttribute("adminId", opt.get().getId());
             session.setAttribute("adminName", opt.get().getName());
+
+            // ✅ ADD THIS LINE (CRITICAL)
+            session.setAttribute("adminEmail", opt.get().getEmail());
+
             return "redirect:/admin/dashboard";
         } else {
             model.addAttribute("error", "Invalid credentials");
             return "admin/login";
         }
     }
+
 
     // 🔹 Admin Dashboard
     @GetMapping("/dashboard")
@@ -298,6 +386,40 @@ public class AdminController {
         }
     }
 
+    @PostMapping("/delete-user")
+    @ResponseBody
+    public ResponseEntity<String> deleteUser(@RequestParam String email,
+                                             @RequestParam String homeName) {
+        try {
+            addedUserRepository.deleteByEmail(email);
+            clientHomeRepository.deleteByHomeName(homeName);
+
+            userRepository.findByEmail(email)
+                    .ifPresent(userRepository::delete);
+
+            return ResponseEntity.ok("success");
+        } catch (Exception e) {
+            e.printStackTrace(); // IMPORTANT for debugging
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("error");
+        }
+    }
+
+
+    // SUSPEND USER
+    @PostMapping("/suspend-user")
+    @ResponseBody
+    public ResponseEntity<String> suspendUser(@RequestParam String email,
+                                              @RequestParam boolean status) {
+        try {
+            userRepository.updateSuspendStatus(email, status);
+            return ResponseEntity.ok("success");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("error");
+        }
+    }
 
 
     @PostMapping("/delete-task")

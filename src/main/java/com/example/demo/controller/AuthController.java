@@ -47,8 +47,19 @@ public class AuthController {
     public String loginPage() { return "login"; }
     
     @PostMapping("/request-otp")
-    public String requestOtp(@RequestParam String email, Model model, HttpSession session) {
+    public String requestOtp(@RequestParam String email,
+            @RequestParam(required = false) String selectedHome,
+            Model model,
+            HttpSession session) {
+        User user = userRepository.findByEmail(email).orElse(null);
 
+        // ✅ ADD THIS BLOCK (SUSPEND CHECK)
+        if (user != null && user.isSuspended()) {
+            model.addAttribute("error",
+                    "🚫 Your account has been suspended by the admin. Please contact support.");
+            return "login"; // <-- this maps to login.jsp
+        }
+        
         // check owner first
         Optional<User> ownerOpt = userRepository.findByEmail(email);
         if (ownerOpt.isPresent()) {

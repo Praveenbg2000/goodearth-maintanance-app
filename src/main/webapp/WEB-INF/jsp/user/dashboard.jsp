@@ -315,7 +315,6 @@ html, body {
     .discription-with-content{
       display: flex;
       align-items: center;
-      gap: 1rem;
       padding: 1rem;
     }
 
@@ -427,14 +426,14 @@ html, body {
     }
 
     .how-to {
-      padding: 1rem;
+      padding-top: 1rem;
     }
 
     .how-to-do{
       display: flex;
       align-items: center;
-      gap: 1rem;
-      padding: 0.5rem 0;
+      gap: 0rem;
+      padding: 0.8rem 0;
     }
 
     /* MOBILE */
@@ -558,7 +557,7 @@ html, body {
                 <div class="how-to-do">
                   <div class="circle-img">
                     <c:if test="${not empty step.stepImage}">
-                      <img src="${pageContext.request.contextPath}/images/${step.stepImage}" alt="Step ${step.stepOrder}" style="width: 100px; height: 100px; border-radius: 50%;">
+                      <img src="${pageContext.request.contextPath}/images/${step.stepImage}" alt="Step ${step.stepOrder}" style="width: 50px; height: 50px; border-radius: 50%;">
                     </c:if>
                   </div>
                   <div>
@@ -569,7 +568,7 @@ html, body {
 
               <!-- Materials -->
             <h2 class="how-to mt-3" style="display: inline; font-weight: 600; padding-left: none; width:100%;">Materials/Finish:</h2>
-			<div style="width:100%; padding-left: 1rem; padding-right: 0.5rem;">
+			<div style="width:100%; padding-top: 0.8rem; padding-right: 0.5rem;">
 				<span style="font-weight: 400; font-size: 12px; width:100%;">${task.materialsFinish}</span>
 			</div>
 

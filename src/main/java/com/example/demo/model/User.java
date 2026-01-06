@@ -23,8 +23,16 @@ public class User {
     private String username;
     private String community;
     private String homeName;
+    
+    private boolean suspended = false;
 
-    @Column(unique = true)
+    public boolean isSuspended() {
+		return suspended;
+	}
+	public void setSuspended(boolean suspended) {
+		this.suspended = suspended;
+	}
+	@Column(unique = true)
     private String email;
 
     private String phone;

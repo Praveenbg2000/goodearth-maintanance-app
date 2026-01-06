@@ -11,7 +11,7 @@
 
 <!-- Tailwind -->
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
 <script>
@@ -25,14 +25,68 @@ tailwind.config = {
         secondaryHover: "#dc2626"
       },
       fontFamily: {
-        sans: ["Inter", "sans-serif"]
-      }
+    	  sans: ["Poppins", "sans-serif"]
+    	}
+
     }
   }
 }
 </script>
 
 <style>
+
+/* ===== RESPONSIVE SUSPEND TOGGLE ===== */
+.check {
+  position: relative;
+  width: 56px;
+  height: 28px;
+  display: inline-block;
+}
+
+.check input {
+  display: none;
+}
+
+/* Track */
+.check label {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #92de97;
+  border-radius: 999px;
+  transition: background 0.35s ease;
+}
+
+/* Knob */
+.check label::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+  transition: transform 0.35s ease;
+}
+
+/* Checked = Active */
+.check input:checked + label {
+  background: #ec8f8f;
+}
+
+.check input:checked + label::after {
+  transform: translateX(28px);
+}
+
+/* Center inside table cell */
+td .check {
+  margin: auto;
+}
+
+
+
 .modal { display: none; }
 .modal.show { display: flex; }
 .tag {
@@ -58,6 +112,14 @@ tailwind.config = {
       <a href="${pageContext.request.contextPath}/admin/dashboard" class="flex items-center gap-1 hover:opacity-80">
         <span class="material-icons text-base">dashboard</span> Dashboard
       </a>
+      <c:if test="${sessionScope.adminEmail == 'marketing@goodearth.org.in'}">
+  <a href="${pageContext.request.contextPath}/admin/manage"
+     class="flex items-center gap-1 hover:opacity-80">
+    <span class="material-icons text-base">admin_panel_settings</span>
+    Manage Admin
+  </a>
+</c:if>
+
       <a href="#" onclick="openAddUserModal()" class="flex items-center gap-1 hover:opacity-80">
         <span class="material-icons text-base">person_add</span> Add User
       </a>
@@ -69,7 +131,7 @@ tailwind.config = {
 </header>
 
 <!-- MAIN -->
-<main class="max-w-7xl mx-auto px-6 py-8">
+<main class="mx-auto py-8">
 
 <div class="bg-white rounded-xl shadow border p-6">
 
@@ -92,43 +154,68 @@ tailwind.config = {
 <table id="userTable" class="min-w-full divide-y">
 <thead class="bg-gray-100">
 <tr>
-<th class="px-4 py-3 text-left text-xs font-semibold">ID</th>
 <th class="px-4 py-3 text-left text-xs font-semibold">Username</th>
 <th class="px-4 py-3 text-left text-xs font-semibold">Email</th>
 <th class="px-4 py-3 text-left text-xs font-semibold">Phone</th>
 <th class="px-4 py-3 text-left text-xs font-semibold">Community</th>
 <th class="px-4 py-3 text-left text-xs font-semibold">Primary Home</th>
 <th class="px-4 py-3 text-center text-xs font-semibold">Profile</th>
+<th class="px-4 py-3 text-center text-xs font-semibold">Suspend</th>
+<th class="px-4 py-3 text-center text-xs font-semibold">Remove</th>
 </tr>
 </thead>
 
 <tbody class="divide-y">
 <c:forEach var="u" items="${users}">
-<tr onclick="openUserModal('${u.id}','${u.username}','${u.email}','${u.phone}','${u.community}','${u.homeName}')"
+<tr onclick="openUserModal('${u.username}','${u.email}','${u.phone}','${u.community}','${u.homeName}')"
     class="hover:bg-gray-50 cursor-pointer">
-<td class="px-4 py-3">${u.id}</td>
-<td class="px-4 py-3 font-medium">${u.username}</td>
-<td class="px-4 py-3 text-gray-600">${u.email}</td>
-<td class="px-4 py-3 text-gray-600">${u.phone}</td>
-<td class="px-4 py-3 text-gray-600">${u.community}</td>
-<td class="px-4 py-3 text-primary font-semibold">
-  <c:out value="${u.homeName != null ? u.homeName : '—'}"/>
-</td>
-<td class="px-4 py-3 text-center">
-<c:choose>
-  <c:when test="${not empty u.profilePhoto}">
-    <img src="${pageContext.request.contextPath}/admin/uploads/${u.profilePhoto}"
-         class="w-10 h-10 rounded-full object-cover mx-auto border">
-  </c:when>
-  <c:otherwise>
-    <img src="https://cdn.vectorstock.com/i/500p/50/89/female-profile-icon-woman-avatar-vector-31775089.jpg"
-         class="w-10 h-10 rounded-full mx-auto border">
-  </c:otherwise>
-</c:choose>
-</td>
+
+  <td class="px-4 py-3 font-medium">${u.username}</td>
+  <td class="px-4 py-3 text-gray-600">${u.email}</td>
+  <td class="px-4 py-3 text-gray-600">${u.phone}</td>
+  <td class="px-4 py-3 text-gray-600">${u.community}</td>
+
+  <td class="px-4 py-3 text-primary font-semibold">
+    <c:out value="${u.homeName != null ? u.homeName : '—'}"/>
+  </td>
+
+  <!-- PROFILE -->
+  <td class="px-4 py-3 text-center">
+    <c:choose>
+      <c:when test="${not empty u.profilePhoto}">
+        <img src="${pageContext.request.contextPath}/admin/uploads/${u.profilePhoto}"
+             class="w-10 h-10 rounded-full object-cover mx-auto border">
+      </c:when>
+      <c:otherwise>
+        <img src="https://cdn.vectorstock.com/i/500p/50/89/female-profile-icon-woman-avatar-vector-31775089.jpg"
+             class="w-10 h-10 rounded-full mx-auto border">
+      </c:otherwise>
+    </c:choose>
+  </td>
+
+  <!-- ✅ SUSPEND -->
+  <td class="px-4 py-3 text-center" onclick="event.stopPropagation()">
+    <div class="check mx-auto">
+      <input type="checkbox"
+             id="suspend_${u.email}"
+             <c:if test="${u.suspended}">checked</c:if>
+             onchange="toggleSuspend('${u.email}', this.checked)">
+      <label for="suspend_${u.email}"></label>
+    </div>
+  </td>
+
+  <!-- ✅ DELETE -->
+  <td class="px-4 py-3 text-center" onclick="event.stopPropagation()">
+    <button onclick="openDeleteModal('${u.email}','${u.homeName}')"
+            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs">
+      Delete
+    </button>
+  </td>
+
 </tr>
 </c:forEach>
 </tbody>
+
 </table>
 </div>
 
@@ -165,7 +252,6 @@ tailwind.config = {
 <input type="text" name="phone" placeholder="Phone" required class="w-full rounded-lg border-gray-300">
 <input type="text" name="community" placeholder="Community" required class="w-full rounded-lg border-gray-300">
 <input type="text" name="homeName" placeholder="Home Name" required class="w-full rounded-lg border-gray-300">
-<input type="file" name="profilePhoto" accept="image/*" class="w-full rounded-lg border-gray-300">
 <button type="submit" class="w-full bg-primary hover:bg-primaryHover text-white py-2 rounded-lg font-medium">Save User</button>
 </form>
 </div>
@@ -194,8 +280,141 @@ Save Homes
 </div>
 </div>
 
+
+<!-- ================= DELETE CONFIRM MODAL ================= -->
+<div id="deleteConfirmModal"
+     class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+
+  <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 text-center">
+    <h3 class="text-lg font-semibold text-red-600 mb-4">
+      Confirm User Deletion
+    </h3>
+
+    <p class="text-gray-700 mb-2">
+      Are you sure you want to permanently delete this user?
+    </p>
+
+    <div class="bg-gray-100 rounded-lg p-3 text-sm text-left mb-4">
+      <p><strong>Email:</strong> <span id="deleteUserEmail"></span></p>
+      <p><strong>Home:</strong> <span id="deleteUserHome"></span></p>
+    </div>
+
+    <div class="flex justify-center gap-4">
+      <button onclick="closeDeleteModal()"
+              class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">
+        Cancel
+      </button>
+
+      <button onclick="confirmDeleteUser()"
+              class="px-4 py-2 rounded bg-red-500 hover:bg-red-600 text-white">
+        Yes, Delete
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= DELETE SUCCESS MODAL ================= -->
+<div id="deleteSuccessModal"
+     class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+
+  <div class="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 text-center">
+    <span class="material-icons text-green-500 text-5xl mb-3">check_circle</span>
+    <h3 class="text-lg font-semibold mb-3">User Deleted Successfully</h3>
+
+    <button onclick="location.reload()"
+            class="mt-4 px-6 py-2 rounded bg-primary hover:bg-primaryHover text-white">
+      OK
+    </button>
+  </div>
+</div>
+
+
+
 <!-- ================= JS (UNCHANGED LOGIC) ================= -->
 <script>
+
+//Popup model script
+
+let deleteEmail = "";
+let deleteHome = "";
+
+// OPEN MODAL
+function openDeleteModal(email, homeName) {
+  deleteEmail = email;
+  deleteHome = homeName || "—";
+
+  document.getElementById("deleteUserEmail").innerText = deleteEmail;
+  document.getElementById("deleteUserHome").innerText = deleteHome;
+
+  const modal = document.getElementById("deleteConfirmModal");
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+}
+
+// CLOSE CONFIRM MODAL
+function closeDeleteModal() {
+  const modal = document.getElementById("deleteConfirmModal");
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
+}
+
+// CONFIRM DELETE
+async function confirmDeleteUser() {
+  closeDeleteModal();
+
+  const res = await fetch("${pageContext.request.contextPath}/admin/delete-user", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      email: deleteEmail,
+      homeName: deleteHome
+    })
+  });
+
+  if (res.ok) {
+    const successModal = document.getElementById("deleteSuccessModal");
+    successModal.classList.remove("hidden");
+    successModal.classList.add("flex");
+  } else {
+    alert("Failed to delete user");
+  }
+}
+
+
+
+//DELETE USER
+async function deleteUser(email, homeName) {
+  if (!confirm("Are you sure you want to permanently delete this user?")) return;
+
+  const res = await fetch("${pageContext.request.contextPath}/admin/delete-user", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ email, homeName })
+  });
+
+  if (res.ok) {
+    alert("User deleted successfully");
+    location.reload();
+  } else {
+    alert("Failed to delete user");
+  }
+}
+
+// SUSPEND USER
+async function toggleSuspend(email, status) {
+  const res = await fetch("${pageContext.request.contextPath}/admin/suspend-user", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ email, status })
+  });
+
+  if (!res.ok) {
+    alert("Failed to update suspend status");
+  }
+}
+
+
+
 /* SEARCH */
 document.getElementById("searchInput").addEventListener("keyup", function () {
   const filter = this.value.toLowerCase();
@@ -212,7 +431,7 @@ function closeAddUserModal(){ addModal.classList.add("hidden"); addModal.classLi
 document.getElementById("addUserForm").addEventListener("submit", async function(e){
 e.preventDefault();
 const res = await fetch("${pageContext.request.contextPath}/admin/add-user",{ method:"POST", body:new FormData(this)});
-if(res.ok){ alert("User added successfully"); location.reload(); } else alert("Error");
+if(res.ok){ alert("User added successfully"); location.reload(); } else alert("User already added or try to add another records");
 });
 
 /* USER MODAL */

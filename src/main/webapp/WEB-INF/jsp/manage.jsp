@@ -44,11 +44,14 @@
     }
 
     .logo-container {
+      display: flex;
+      justify-content: center;
       padding-bottom: 1rem;
     }
 
     .logo-container img {
-      width: 15vw;
+      margine-top: 15px;
+      width: 10vw;
       transition: opacity 0.4s ease;
     }
 
@@ -84,10 +87,7 @@
 
 
     <div class="w-full mt-10">
-    <div class="logo-container">
-        <img id="logo" src="${pageContext.request.contextPath}/images/GoodEarth-White-logo.svg" alt="GoodEarth Logo"/>
-    </div>
-      <form action="${pageContext.request.contextPath}/login" method="get">
+    <form action="${pageContext.request.contextPath}/login" method="get">
         <button
           type="submit"
           class="w-full bg-primary text-gray-800 font-semibold py-4 px-4 rounded-full shadow-md focus:outline-none hover:bg-yellow-400 transition"
@@ -95,6 +95,10 @@
           Log In
         </button>
       </form>
+    <div class="logo-container">
+        <img id="logo" src="${pageContext.request.contextPath}/images/GoodEarth-White-logo.svg" alt="GoodEarth Logo" style="width:7.8rem; padding-top:1.2rem;"/>
+    </div>
+      
     </div>
   </main>
 
